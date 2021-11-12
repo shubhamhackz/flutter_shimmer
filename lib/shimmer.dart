@@ -132,17 +132,7 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this, duration: widget.period)
-      ..addStatusListener((AnimationStatus status) {
-        if (status != AnimationStatus.completed) {
-          return;
-        }
-        _count++;
-        if (widget.loop <= 0) {
-          _controller.repeat();
-        } else if (_count < widget.loop) {
-          _controller.forward(from: 0.0);
-        }
-      });
+      ..addStatusListener(_animationStatusListener);
     if (widget.enabled) {
       _controller.forward();
     }
@@ -172,8 +162,21 @@ class _ShimmerState extends State<Shimmer> with SingleTickerProviderStateMixin {
     );
   }
 
+  void _animationStatusListener(AnimationStatus status) {
+    if (status != AnimationStatus.completed) {
+      return;
+    }
+    _count++;
+    if (widget.loop <= 0) {
+      _controller.repeat();
+    } else if (_count < widget.loop) {
+      _controller.forward(from: 0.0);
+    }
+  }
+
   @override
   void dispose() {
+    _controller.removeStatusListener(_animationStatusListener);
     _controller.dispose();
     super.dispose();
   }
